@@ -1,0 +1,66 @@
+﻿@page "/"
+@page "/{categoryid:guid}"
+@using StoreProject.UI.Services
+@inject ICategoryService CategoryService;
+@inject IProductService ProductService;
+<PageTitle>Index</PageTitle>
+
+@*<h1>Hello, world!</h1>*@
+
+@if (category != null)
+{
+    <h1>@category.Title</h1>
+    <div class="row">
+        @foreach (var product in Products)
+        {
+
+            <div class="col-md-6 col-lg-4 my-2">
+                <a title="@product.Title" href="/@category.Id/product/@product.Id">
+                    <div class="card shadow h-100 ">
+                        <div class="media-img-wrapper"><img src="@product.ImageName" class="card-img-top" alt="@product.Title"></div>
+                        <div class="card-body">
+                            <h3 class="h6 card-title  text-black">@product.Title</h3>
+                            <p class="card-text">@product.ShortDescription</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="h6 text-danger">@product.Price تومان</span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        }
+    </div>
+}
+else
+{
+    <ProductsList />
+}
+
+@code {
+    [Parameter]
+    public Guid CategoryId { get; set; }
+
+    private ProductCategoryDto category = null;
+    private IEnumerable<ProductDto> Products { get; set; } = new List<ProductDto>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CategoryId != Guid.Empty)
+        {
+            category = await CategoryService.GetProductCategoryById(CategoryId, false);
+            Products = await ProductService.GetAllProductsById(CategoryId, false);
+        }
+        else
+        {
+            category = null;
+            //Products = await ProductService.GetAllProducts(false);
+        }
+    }
+}
+

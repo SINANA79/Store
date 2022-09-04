@@ -1,0 +1,61 @@
+﻿@inject ISyncLocalStorageService LocalStorage
+@inject ICartService CartService
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<BlazoredTypeahead SearchMethod="@SearchProduct"
+                   TValue="ProductDtoCId"
+                   TItem="ProductDtoCId"
+                   Value="selectedProduct"
+                   ValueChanged="HandleSearch"
+                   ValueExpression="@(() => selectedProduct)"
+                   placeholder="جستجو...">
+    <SelectedTemplate>
+        @context.Title
+    </SelectedTemplate>
+    <ResultTemplate>
+        @context.Title
+    </ResultTemplate>
+    <NotFoundTemplate>
+        هیچ محصولی یافت نشد
+    </NotFoundTemplate>
+</BlazoredTypeahead>
+
+<a href="cart" class="btn btn-info">
+    <i class="oi oi-cart"></i>
+    سبد خرید
+    <span class="badge badge-pill badge-light">@GetProductCount()</span>
+</a>
+
+@code {
+    private ProductDtoCId selectedProduct;
+
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+    private int GetProductCount()
+    {
+        var cart = LocalStorage.GetItem<List<ProductDto>>("cart");
+        return cart != null ? cart.Count : 0;
+    }
+
+    private void HandleSearch(ProductDtoCId product)
+    {
+        if (product == null) return;
+        selectedProduct = product;
+        NavigationManager.NavigateTo($"{selectedProduct.CategoryId}/product/{selectedProduct.Id}");
+    }
+
+    private async Task<IEnumerable<ProductDtoCId>> SearchProduct(string searchText)
+    {
+        var response = await ProductService.SearchProducts(searchText);
+        return response;
+    }
+}

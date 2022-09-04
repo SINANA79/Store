@@ -1,0 +1,45 @@
+﻿@page "/admin/category"
+
+@inject ICategoryService categoryService
+@inject IToastService ToastService
+<a class="btn btn-primary " href="/admin/category/add-category">افزودن دسته بندی</a>
+<table class="table table-bordered">
+    <tr>
+        <th>
+            نام دسته بندی
+        </th>
+        <th>
+            فعال/غیرفعال
+        </th>
+    </tr>
+    @foreach (var category in Categorie)
+    {
+        <tr>
+            <td>
+                @category.Title
+            </td>
+            <td>
+                <input type="checkbox" class="btn-primary" @bind="category.IsActive" disabled>
+            </td>
+            <td>
+                <a class="btn btn-warning" href="/admin/category/edit-category/@category.Id">ویرایش</a>
+                <a class="btn btn-danger" href="/admin/category/delete-category/@category.Id">حذف</a>
+                <a class="btn btn-btn-primary" href="/admin/category/@category.Id/product">محصولات</a>
+            </td>
+        </tr>
+    }
+
+</table>
+@code {
+    private Guid DeleteCategoryId { get; set; } = Guid.Empty;
+    public bool IsProcessing { get; set; } = false;
+
+    private IEnumerable<ProductCategoryDto> Categorie { get; set; } = new List<ProductCategoryDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categorie = await categoryService.GetAllProductCategoriesForAdmin(false);
+    }
+    private bool IsConfirm { get; set; }
+
+}

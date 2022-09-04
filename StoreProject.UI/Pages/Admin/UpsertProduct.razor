@@ -1,0 +1,122 @@
+﻿@page "/admin/category/{categoryId:guid}/product/add-product"
+@page "/admin/category/{categoryId:guid}/product/edit-product/{productId:guid}"
+
+@inject ICategoryService CategoryService;
+@inject IProductService ProductService;
+@inject IToastService ToastService;
+@inject NavigationManager NavigationManager
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="post_content">
+                <EditForm Model="@Product" OnValidSubmit="HandleUpsertProduct">
+                    <DataAnnotationsValidator />
+                    @*<ValidationSummary />*@
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>عنوان : </label>
+                            <InputText class="form-control" @bind-Value="@Product.Title" placeholder="عنوان محصول" />
+                        </div>
+                        <ValidationMessage class="text-danger" style="color:red" For="() => Product.Title" />
+                        <div class="form-group">
+                            <label>آدرس تصویر : </label>
+                            <InputText class="form-control" @bind-Value="@Product.ImageName" placeholder="آدرس تصویر محصول" />
+                        </div>
+                        <ValidationMessage class="text-danger" style="color:red" For="() => Product.ImageName" />
+                        <div class="form-group">
+                            <label>قیمت : </label>
+                            <InputText class="form-control" @bind-Value="Product.Price" placeholder="قیمت محصول" />
+                        </div>
+                        <ValidationMessage class="text-danger" style="color:red" For="() => Product.Price" />
+                        <div class="form-group">
+                            <label>توضیحات کوتاه : </label>
+                            <InputText class="form-control" @bind-Value="@Product.ShortDescription" placeholder="توضیحات کوتاه محصول" />
+                        </div>
+                        <ValidationMessage class="text-danger" style="color:red" For="() => Product.ShortDescription" />
+                        <div class="form-group">
+                            <label>توضیحات : </label>
+                            <InputTextArea class="form-control" @bind-Value="@Product.Description" placeholder="توضیحات محصول" />
+                        </div>
+                        <ValidationMessage class="text-danger" style="color:red" For="() => Product.Description" />
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>فعال : </label>
+                            <input type="checkbox" @bind="@boolvalue">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <button class="btn btn-success" type="submit">@Title محصول</button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Guid CategoryId { get; set; }
+
+    [Parameter]
+    public Guid ProductId { get; set; }
+
+    public string Title { get; set; } = "افزودن";
+    public bool boolvalue { get; set; }
+
+    private ProductDto Product { get; set; } = new ProductDto();
+    private ProductCategoryDto ProductCategory { get; set; } = new ProductCategoryDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ProductId != Guid.Empty)
+        {
+            // update
+            Title = "ویرایش";
+            Product = await ProductService.GetProductById(CategoryId, ProductId, false);
+            boolvalue = Product.IsActive;
+        }
+        else
+        {
+            // create
+        }
+    }
+
+    private async Task HandleUpsertProduct()
+    {
+        try
+        {
+            //var duplicateNews = await CategoryService.ca(NewsModel.Title, NewsModel.NewsId);
+            //if (duplicateNews != null)
+            //{
+            //    ToastService.ShowError("دسته بندی مورد نظر تکراری می باشد");
+            //    return;
+            //}
+
+
+            if (Product.Id != Guid.Empty)
+            {
+                Product.IsActive = boolvalue;
+                await ProductService.UpdateProduct(CategoryId, ProductId, Product);
+                Console.WriteLine(Product.Title);
+                ToastService.ShowSuccess("پیغام موفقیت", "محصول مورد نظر با موفقیت ویرایش شد");
+            }
+            else
+            {
+                Product.IsActive = boolvalue;
+                await ProductService.CreateProduct(CategoryId, Product);
+                ToastService.ShowSuccess("پیغام موفقیت", "محصول مورد نظر با موفقیت ثبت شد");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+        NavigationManager.NavigateTo($"admin/category/{CategoryId}/product");
+    }
+}

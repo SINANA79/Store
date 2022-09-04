@@ -1,0 +1,66 @@
+﻿@page "/{categoryid:guid}/product/{productid:guid}"
+@using StoreProject.UI.Services
+@inject ICategoryService CategoryService;
+@inject IProductService ProductService;
+@inject ICartService CartService;
+@inject ILocalStorageService LocalStorage;
+@inject IToastService ToastService;
+
+<h2>جزئیات محصول</h2>
+<div class="media">
+    <div class="media-img-big-wrapper mr-2" style="float: right">
+        <img class="media-img-big" src="@Product.ImageName" alt="@Product.Title" />
+    </div>
+    <div class="container">
+        <div class="col-md-6" style="float: left; height: 350px;">
+            <h3 class="mb-0">@Product.Title</h3>
+            <br />
+            <p>@Product.ShortDescription</p>
+        </div>
+    </div>
+</div>
+<br />
+<div class="col-md-12">
+    <button class="btn btn-primary" @onclick="AddToCart"><i class="oi oi-cart"></i> افزودن به سبد خرید</button>
+</div>
+<div>
+    <EditForm Model="cartItem">
+        <div class="form-group">
+            <InputNumber id="quantity" @bind-Value="cartItem.Quantity"
+                         class="form-control" style="width: 70px" min="1" max="10" />
+        </div>
+    </EditForm>
+</div>
+<br />
+<div class="card border-0 col-md-12">
+    <h3>توضیحات محصول</h3>
+    <br />
+    @Product.Description
+</div>
+
+@code {
+    private ProductDto Product = new ProductDto();
+    private ProductCategoryDto category = new ProductCategoryDto();
+    private CartItem cartItem = new CartItem { Quantity = 1 };
+
+    [Parameter]
+    public Guid CategoryId { get; set; }
+
+    [Parameter]
+    public Guid ProductId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Product = await ProductService.GetProductById(CategoryId, ProductId, false);
+        category = await CategoryService.GetProductCategoryById(CategoryId, false);
+    }
+
+    private async Task AddToCart()
+    {
+        cartItem.Id = Product.Id;
+        cartItem.Title = Product.Title;
+        cartItem.ImageName = Product.ImageName;
+        cartItem.Price = Product.Price;
+        await CartService.AddToCart(category, cartItem);
+    }
+}

@@ -1,0 +1,60 @@
+﻿@page "/admin/category/{categoryId:guid}/product"
+@inject ICategoryService CategoryService
+@inject IProductService ProductService
+<a class="btn btn-primary " href="/admin/category/@CategoryId/product/add-product">افزودن محصول</a>
+<table class="table table-bordered">
+    <tr>
+        <th>
+            تصویر محصول
+        </th>
+        <th>
+            نام محصول
+        </th>
+        <th>
+            توضیحات کوتاه
+        </th>
+        <th>
+            فعال/غیرفعال
+        </th>
+        <th>
+            قیمت
+        </th>
+    </tr>
+    @foreach (var item in Product)
+    {
+        <tr>
+            <td>
+                <img class="img-fluid" style="width:200px; height:150px;" src="@item.ImageName">
+            </td>
+            <td>
+                @item.Title
+            </td>
+            <td>
+                @item.ShortDescription
+            </td>
+            <td>
+                <input type="checkbox" class="btn-primary" @bind="item.IsActive" disabled>
+            </td>
+            <td>
+                @item.Price
+            </td>
+            <td>
+                <a class="btn btn-warning" href="/admin/category/@CategoryId/product/edit-product/@item.Id">ویرایش</a>
+                <a class="btn btn-danger" href="/admin/category/@CategoryId/product/delete-product/@item.Id">حذف</a>
+            </td>
+        </tr>
+    }
+</table>
+
+@code {
+    [Parameter]
+    public Guid CategoryId { get; set; }
+
+    private IEnumerable<ProductDto> Product { get; set; } = new List<ProductDto>();
+    private ProductCategoryDto ProductCategory = new ProductCategoryDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Product = await ProductService.GetAllProductsByIdForAdmin(CategoryId, false);
+    }
+}

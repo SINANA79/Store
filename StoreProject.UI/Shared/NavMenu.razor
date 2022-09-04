@@ -1,0 +1,55 @@
+﻿@using System.Reflection
+@using System.Runtime.CompilerServices
+@using StoreProject.UI.Services
+@using StoreProject.UI.Dtos
+@inject ICategoryService categoryService
+<div class="top-row ps-3 navbar navbar-dark" dir="rtl">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">فروشگاه</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu" dir="rtl">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> خانه
+            </NavLink>
+        </div>
+        <div class="nav-item px-3" style="color: white">
+            دسته بندی
+        </div>
+        @foreach (var category in Categories)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@category.Id">
+                    <span class="" aria-hidden="true"></span> @category.Title
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private IEnumerable<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = await categoryService.GetAllProductCategories(false);
+    }
+
+
+}

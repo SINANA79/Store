@@ -1,0 +1,43 @@
+﻿@using StoreProject.UI.Services
+@inject IProductService ProductService;
+@inject ICategoryService CategoryService;
+
+<div class="row">
+        @foreach (var product in Products)
+        {
+
+            <div class="col-md-6 col-lg-4 my-2">
+                <a title="@product.Title" href="/@product.CategoryId/product/@product.Id">
+                    <div class="card shadow h-100 ">
+                        <div class="media-img-wrapper"><img src="@product.ImageName" class="card-img-top" alt="@product.Title"></div>
+                        <div class="card-body">
+                            <h3 class="h6 card-title  text-black">@product.Title</h3>
+                            <p class="card-text">@product.ShortDescription</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="h6 text-danger">@product.Price تومان</span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        }
+    </div>
+
+@code {
+
+    [Parameter]
+    public Guid categoryId { get; set; }
+    private IEnumerable<ProductDtoCId> Products { get; set; } = new List<ProductDtoCId>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Products = await ProductService.GetAllProducts(false);
+    }
+}

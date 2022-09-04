@@ -1,0 +1,103 @@
+﻿@page "/cart"
+@inject ICartService CartService
+
+
+@if (!orderPlaced)
+{
+    <h3>سبد خرید</h3>
+    @if (cartItems == null || cartItems.Count <= 0)
+    {
+        <span>سبد خرید شما خالی است.</span>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            @foreach (var item in cartItems)
+            {
+                <tr>
+                    <td>
+                        <img class="img-fluid" style="width:200px; height:150px;" src="@item.ImageName">
+                    </td>
+                    <td>
+                        @item.Title
+                    </td>
+                    <td>
+                        @(Convert.ToInt64(item.Price)*item.Quantity) تومان
+                    </td>
+                    <td>
+                        <EditForm Model="item">
+                            <InputNumber id="quantity" @bind-Value="item.Quantity"
+                             class="form-control" style="width: 70px" min="1" max="10"/>
+                        </EditForm>
+                    </td>
+                    <td>
+                        <button class="btn btn-delete oi oi-trash" @onclick="@(() => DeleteItem(item))"></button>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td>
+                    مجموع (@cartItems.Count): @cartItems.Sum(item => Convert.ToInt64(item.Price)*item.Quantity) تومان
+
+                </td>
+                <td>
+                    <button class="btn btn-primary btn-lg" @onclick="PlaceOrder">ثبت سفارش</button>
+                </td>
+            </tr>
+        </table>
+    }
+}
+else
+{
+    <h3>با تشکر از سفارش شما</h3>
+    <br/>
+    <h4>فاکتور خرید</h4>
+     <table class="table table-bordered">
+            @foreach (var item in cartItems)
+            {
+                <tr>
+                    <td>
+                        <img class="img-fluid" style="width:200px; height:150px;" src="@item.ImageName">
+                    </td>
+                    <td>
+                        @item.Title
+                    </td>
+                    <td>
+                        @(Convert.ToInt64(item.Price)*item.Quantity) تومان
+                    </td>
+                    <td>
+                        تعداد: @item.Quantity
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td>
+                    مجموع: @cartItems.Sum(item => Convert.ToInt64(item.Price)*item.Quantity) تومان
+
+                </td>
+            </tr>
+        </table>
+}
+
+@code {
+    List<CartItem> cartItems = new List<CartItem>();
+
+    bool orderPlaced = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cartItems = await CartService.GetCartItems();
+    }
+
+    private async Task DeleteItem(CartItem item)
+    {
+        await CartService.DeleteItem(item);
+        cartItems = await CartService.GetCartItems();
+    }
+
+    private async Task PlaceOrder()
+    {
+        orderPlaced = true;
+        await CartService.EmptyCart();
+    }
+}
